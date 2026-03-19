@@ -152,7 +152,7 @@ void user_app_init(void)
     g_appCtx.timerBatteryEvt = TL_ZB_TIMER_SCHEDULE(batteryCb, NULL, BATTERY_TIMER_INTERVAL);
 #endif
 
-    dev_onoff_cmd_init();
+//    dev_onoff_cmd_init();
 
     DEBUG(DEBUG_GPIO_EN, "model_in_flash: %d\r\n", model_in_flash);
 

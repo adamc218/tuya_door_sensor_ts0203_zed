@@ -20,10 +20,10 @@ enum {
     ONOFF_CMD_REPEAT
 };
 
-void cmdOnOff(uint8_t command, uint8_t app_mode);
-void dev_onoff_cmd_init();
-dev_onoff_cmd_t *get_dev_onoff_cmd_free();
-dev_onoff_cmd_t *find_rsp_dev_onoff_cmd(uint8_t seq_num);
-void set_send_dev_onoff_cmd(uint8_t seq_num);
+void cmdOnOff(uint8_t command);
+//void dev_onoff_cmd_init();
+//dev_onoff_cmd_t *get_dev_onoff_cmd_free();
+//dev_onoff_cmd_t *find_rsp_dev_onoff_cmd(uint8_t seq_num);
+//void set_send_dev_onoff_cmd(uint8_t seq_num);
 
 #endif /* SRC_INCLUDE_APP_ON_OFF_H_ */

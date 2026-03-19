@@ -11,12 +11,12 @@ static uint32_t time_close = 0;
 static ev_timer_event_t *timerDelayOnEvt = NULL;
 static ev_timer_event_t *timerDelayOffEvt = NULL;
 
-bool repeat_onoff_cmd = false;
+//bool repeat_onoff_cmd = false;
 
 static int32_t delay_onCb(void *args) {
 
     uint8_t cmd_onoff = (uint8_t)((uint32_t)args);
-    cmdOnOff(cmd_onoff, ONOFF_CMD_CHECK_ANSWER);
+    cmdOnOff(cmd_onoff);
 
     timerDelayOnEvt = NULL;
     return -1;
@@ -25,7 +25,7 @@ static int32_t delay_onCb(void *args) {
 static int32_t delay_offCb(void *args) {
 
     uint8_t cmd_onoff = (uint8_t)((uint32_t)args);
-    cmdOnOff(cmd_onoff, ONOFF_CMD_CHECK_ANSWER);
+    cmdOnOff(cmd_onoff);
 
     timerDelayOffEvt = NULL;
     return -1;
@@ -80,7 +80,7 @@ void door_handler() {
                     }
                     timerDelayOnEvt = TL_ZB_TIMER_SCHEDULE(delay_onCb, (void *)((uint32_t)cmd_onoff), onoffCfgAttrs->delay_on * 1000);
                 } else {
-                    cmdOnOff(cmd_onoff, ONOFF_CMD_CHECK_ANSWER);
+                    cmdOnOff(cmd_onoff);
                 }
             }
         }
@@ -125,15 +125,10 @@ void door_handler() {
                     }
                     timerDelayOffEvt = TL_ZB_TIMER_SCHEDULE(delay_offCb, (void *)((uint32_t)cmd_onoff), onoffCfgAttrs->delay_off * 1000);
                 } else {
-                    cmdOnOff(cmd_onoff, ONOFF_CMD_CHECK_ANSWER);
+                    cmdOnOff(cmd_onoff);
                 }
             }
         }
-    }
-
-    if (repeat_onoff_cmd) {
-        repeat_onoff_cmd = false;
-        cmdOnOff(0, ONOFF_CMD_REPEAT);
     }
 }
 

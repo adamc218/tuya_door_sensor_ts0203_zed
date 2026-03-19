@@ -238,7 +238,6 @@ static void app_zclDfltRspCmd(uint16_t clusterId, zclDefaultRspCmd_t *pDftRspCmd
 //    DEBUG(DEBUG_ZCL_CB_EN, "cmdID: %d, status: %d, seq_num: %d\r\n", pDftRspCmd->commandID, pDftRspCmd->statusCode, seq_num);
 //    irq_restore(r);
 
-    set_send_dev_onoff_cmd(seq_num);
 }
 
 #ifdef ZCL_REPORT
