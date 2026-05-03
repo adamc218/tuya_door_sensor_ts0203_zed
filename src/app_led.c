@@ -5,12 +5,18 @@
 
 void led_on(uint32_t pin)
 {
-    if (device->device_en) drv_gpio_write(pin, LED_ON(device->led_on));
+    if (device->device_en) {
+        drv_gpio_write(pin, LED_ON(device->led_on));
+        g_appCtx.ledStatus = true;
+    }
 }
 
 void led_off(uint32_t pin)
 {
-    if (device->device_en) drv_gpio_write(pin, LED_OFF(device->led_off));
+    if (device->device_en) {
+        drv_gpio_write(pin, LED_OFF(device->led_off));
+        g_appCtx.ledStatus = false;
+    }
 }
 
 void light_on(void)

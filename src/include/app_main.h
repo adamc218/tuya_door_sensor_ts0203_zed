@@ -16,6 +16,7 @@
 #include "app_on_off.h"
 #include "app_battery.h"
 #include "app_reporting.h"
+#include "app_repeat_cmd.h"
 #include "app_endpoint_cfg.h"
 #include "app_utility.h"
 #include "app_device.h"
@@ -46,6 +47,7 @@ typedef struct {
 
     uint16_t ledOnTime;
     uint16_t ledOffTime;
+    bool     ledStatus;
     uint8_t  oriSta;     //original state before blink
     uint8_t  sta;        //current state in blink
     uint8_t  times;      //blink times
