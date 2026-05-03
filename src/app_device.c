@@ -1,7 +1,7 @@
 #include "app_main.h"
 
-static bool first_start = true;
-static uint8_t zb_modelId[10] = {8,'M','o','d','e','l',' ','0','0',0};
+bool first_start = true;
+static uint8_t productLabel[10] = {8,'M','o','d','e','l',' ','0','0',0};
 
 
 device_door_t device_door[DEVICE_MODEL_MAX];
@@ -50,27 +50,27 @@ static void device_model_init() {
 
     switch(device_model) {
         case DEVICE_MODEL_1:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '1';
+            productLabel[7] = '0';
+            productLabel[8] = '1';
             break;
         case DEVICE_MODEL_2:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '2';
+            productLabel[7] = '0';
+            productLabel[8] = '2';
             break;
         case DEVICE_MODEL_3:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '3';
+            productLabel[7] = '0';
+            productLabel[8] = '3';
             break;
         case DEVICE_MODEL_4:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '4';
+            productLabel[7] = '0';
+            productLabel[8] = '4';
             break;
         default:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '0';
+            productLabel[7] = '0';
+            productLabel[8] = '0';
             break;
     }
-    memcpy(g_zcl_basicAttrs.productLabel, zb_modelId, 9);
+    memcpy(g_zcl_basicAttrs.productLabel, productLabel, 9);
     g_zcl_onOffSwitchCfgAttrs.model = device_model;
 }
 
