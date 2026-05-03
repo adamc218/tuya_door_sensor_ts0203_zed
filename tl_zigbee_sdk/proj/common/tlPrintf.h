@@ -45,12 +45,12 @@ int tl_printf(const char *format, ...);
 
     #define DEBUG_ARRAY(compileFlag, arrayAddr, len)    do{ \
                                                             if (compileFlag) { \
-                                                                TRACE("*********************************\n"); \
+                                                                TRACE("*********************************\r\n"); \
                                                                 unsigned char i = 0; \
                                                                 do { \
                                                                     TRACE(" %x", ((unsigned char *)arrayAddr)[i++]); \
                                                                 } while(i < len); \
-                                                                TRACE("\n*********************************\n"); \
+                                                                TRACE("\r\n*********************************\r\n"); \
                                                             } \
                                                         }while(0)
 #else
