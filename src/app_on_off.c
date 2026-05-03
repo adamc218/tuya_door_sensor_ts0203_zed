@@ -1,6 +1,6 @@
 #include "app_main.h"
 
-static bool first_start = true;
+static bool onoff_first_start = true;
 ev_timer_event_t *timerOnOffCmdEvt = NULL;
 
 static status_t cmdOnOffSend(uint8_t ep, epInfo_t *dstEpInfo, uint8_t command) {
@@ -8,31 +8,31 @@ static status_t cmdOnOffSend(uint8_t ep, epInfo_t *dstEpInfo, uint8_t command) {
     status_t st = 0xFF;
 
     /* command 0x00 - off, 0x01 - on, 0x02 - toggle */
-
     switch(command) {
         case ZCL_CMD_ONOFF_OFF:
-            APP_DEBUG(DEBUG_ONOFF_EN, "OnOff command: off\r\n");
-            st = zcl_onOff_offCmd(ep, dstEpInfo, FALSE);
+            DEBUG(DEBUG_ONOFF_EN, "OnOff command: off\r\n");
+            st = zcl_onOff_offCmd(ep, dstEpInfo, TRUE);
             break;
         case ZCL_CMD_ONOFF_ON:
-            APP_DEBUG(DEBUG_ONOFF_EN, "OnOff command: on\r\n");
-            st = zcl_onOff_onCmd(ep, dstEpInfo, FALSE);
+            DEBUG(DEBUG_ONOFF_EN, "OnOff command: on\r\n");
+            st = zcl_onOff_onCmd(ep, dstEpInfo, TRUE);
             break;
         case ZCL_CMD_ONOFF_TOGGLE:
-            APP_DEBUG(DEBUG_ONOFF_EN, "OnOff command: toggle\r\n");
-            st = zcl_onOff_toggleCmd(ep, dstEpInfo, FALSE);
+            DEBUG(DEBUG_ONOFF_EN, "OnOff command: toggle\r\n");
+            st = zcl_onOff_toggleCmd(ep, dstEpInfo, TRUE);
             break;
         default:
+            DEBUG(DEBUG_ONOFF_EN, "OnOff command: unknown\r\n");
             break;
     }
-
+//    DEBUG(DEBUG_ONOFF_EN, ", status: 0x%02x\r\n", st);
     return st;
 }
 
 void cmdOnOff(uint8_t command) {
 
-    if (first_start) {
-        first_start = false;
+    if (onoff_first_start) {
+        onoff_first_start = false;
         return;
     }
 
@@ -66,20 +66,21 @@ void cmdOnOff(uint8_t command) {
     /* command when binding */
     TL_SETSTRUCTCONTENT(dstEpInfo, 0);
     dstEpInfo.profileId = HA_PROFILE_ID;
-//    dstEpInfo.dstAddrMode = APS_DSTADDR_EP_NOTPRESETNT;
-//    dstEpInfo.dstAddrMode = APS_SHORT_GROUPADDR_NOEP;
-//    dstEpInfo.dstAddrMode = APS_LONG_DSTADDR_WITHEP;
 
     aps_binding_entry_t *bind_tbl = bindTblEntryGet();
     for (uint8_t j = 0; j < APS_BINDING_TABLE_NUM; j++) {
         if (bind_tbl->used && bind_tbl->clusterId == ZCL_CLUSTER_GEN_ON_OFF && bind_tbl->srcEp == APP_ENDPOINT1) {
             dstEpInfo.dstAddrMode = bind_tbl->dstAddrMode;
             if (dstEpInfo.dstAddrMode == APS_SHORT_GROUPADDR_NOEP) {
+                dstEpInfo.txOptions = 0;
                 dstEpInfo.dstAddr.shortAddr = bind_tbl->groupAddr;
             } else {
+                dstEpInfo.txOptions = APS_TX_OPT_ACK_TX;
                 dstEpInfo.dstAddrMode = APS_LONG_DSTADDR_WITHEP;
                 dstEpInfo.dstEp = bind_tbl->dstExtAddrInfo.dstEp;
                 memcpy(dstEpInfo.dstAddr.extAddr, bind_tbl->dstExtAddrInfo.extAddr, sizeof(extAddr_t));
+                app_add_repeat_cmd(ZCL_CLUSTER_GEN_ON_OFF, APP_ENDPOINT1, dstEpInfo.dstEp,
+                                   dstEpInfo.dstAddrMode, dstEpInfo.dstAddr, command);
             }
             st = cmdOnOffSend(APP_ENDPOINT1, &dstEpInfo, command);
 #if DEBUG_ONOFF_EN
@@ -108,5 +109,28 @@ void cmdOnOff(uint8_t command) {
         bind_tbl++;
     }
 
+}
+
+int32_t app_repeatCmdOnOff(void *args) {
+
+    APP_DEBUG(DEBUG_REPEAT_EN, "app_repeatCmdOnOff()\r\n");
+    repeat_cmd_t *r_cmd = (repeat_cmd_t*)args;
+    if (!r_cmd) return -1;
+
+    epInfo_t dstEpInfo;
+    TL_SETSTRUCTCONTENT(dstEpInfo, 0);
+    dstEpInfo.profileId = HA_PROFILE_ID;
+    dstEpInfo.txOptions = APS_TX_OPT_ACK_TX;
+
+    dstEpInfo.dstAddrMode = r_cmd->dstAddrMode;
+    if (dstEpInfo.dstAddrMode == APS_SHORT_GROUPADDR_NOEP) {
+        dstEpInfo.dstAddr.shortAddr = r_cmd->dstAddr.shortAddr;
+    } else {
+        dstEpInfo.dstEp = r_cmd->dstEp;
+        memcpy(dstEpInfo.dstAddr.extAddr, r_cmd->dstAddr.extAddr, sizeof(extAddr_t));
+    }
+    cmdOnOffSend(r_cmd->srcEp, &dstEpInfo, r_cmd->cmdId);
+
+    return -1;
 }
 

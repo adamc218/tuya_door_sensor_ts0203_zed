@@ -44,34 +44,37 @@ static void device_model_init() {
         device_gpio_init(&device->debug_gpio);
         gpio_write(device->debug_gpio.gpio, 1);
 #endif
-        light_init();
     }
-    kb_drv_init();
 
-    switch(device_model) {
-        case DEVICE_MODEL_1:
-            productLabel[7] = '0';
-            productLabel[8] = '1';
-            break;
-        case DEVICE_MODEL_2:
-            productLabel[7] = '0';
-            productLabel[8] = '2';
-            break;
-        case DEVICE_MODEL_3:
-            productLabel[7] = '0';
-            productLabel[8] = '3';
-            break;
-        case DEVICE_MODEL_4:
-            productLabel[7] = '0';
-            productLabel[8] = '4';
-            break;
-        default:
-            productLabel[7] = '0';
-            productLabel[8] = '0';
-            break;
+    if (first_start) {
+        first_start = false;
+        light_init();
+        kb_drv_init();
+        switch(device_model) {
+            case DEVICE_MODEL_1:
+                productLabel[7] = '0';
+                productLabel[8] = '1';
+                break;
+            case DEVICE_MODEL_2:
+                productLabel[7] = '0';
+                productLabel[8] = '2';
+                break;
+            case DEVICE_MODEL_3:
+                productLabel[7] = '0';
+                productLabel[8] = '3';
+                break;
+            case DEVICE_MODEL_4:
+                productLabel[7] = '0';
+                productLabel[8] = '4';
+                break;
+            default:
+                productLabel[7] = '0';
+                productLabel[8] = '0';
+                break;
+        }
+        memcpy(g_zcl_basicAttrs.productLabel, productLabel, 9);
+        g_zcl_onOffSwitchCfgAttrs.model = device_model;
     }
-    memcpy(g_zcl_basicAttrs.productLabel, productLabel, 9);
-    g_zcl_onOffSwitchCfgAttrs.model = device_model;
 }
 
 void device_model_restore() {
@@ -111,7 +114,6 @@ void device_init() {
 
     if (first_start) {
 
-        first_start = false;
         memset(&device_door, 0, sizeof(device_door));
 
         /* None device - model_0 */
@@ -230,7 +232,7 @@ void device_init() {
         } else {
             device_model_restore();
         }
-    } else {
-        device_model_init();
+//    } else {
+//        device_model_init();
     }
 }

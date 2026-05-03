@@ -78,9 +78,10 @@
 #define DEBUG_DOOR_EN                   ON
 #define DEBUG_ZCL_CB_EN                 ON
 #define DEBUG_GPIO_EN                   ON
+#define DEBUG_REPEAT_EN                 ON
 
 #if UART_PRINTF_MODE
-#define DEBUG_INFO_TX_PIN       GPIO_PB1    //fake gpio for 32pin's chip
+#define DEBUG_INFO_TX_PIN       GPIO_PB1
 #define DEBUG_BAUDRATE          115200
 #endif /* UART_PRINTF_MODE */
 
