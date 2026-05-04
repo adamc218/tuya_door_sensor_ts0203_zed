@@ -91,74 +91,39 @@ static inline void app_gpio_init(int anaRes_init_en) {
             //            reg_gpio_pd_setting1: 0xFFFF00
             //            reg_gpio_pd_setting2: 0x7BFF00
 
-            if (first_start) {
-                reg_gpio_pa_setting1 = 0xFFFF80;
-                reg_gpio_pa_setting2 = 0x7FFF00;
+            reg_gpio_pa_setting1 = 0xFFFF80;
+            reg_gpio_pa_setting2 = 0x7FFF00;
 
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0xFD); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xFD; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-                reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0x3F;
+            //PB group
+            //input en
+            analog_write(areg_gpio_pb_ie, 0xFD); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
+            //output en
+            reg_gpio_pb_oen = 0xFD; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
+            //data out
+            reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
+            //ds
+            analog_write(areg_gpio_pb_ds, 0xFF);
+            //func as GPIO
+            reg_gpio_pb_gpio = 0x3F;
 
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0xD7);
+            //PC group
+            //ie
+            analog_write(areg_gpio_pc_ie, 0xD7);
 
-                //oen
-                reg_gpio_pc_oen = 0xD7;
+            //oen
+            reg_gpio_pc_oen = 0xD7;
 
-                //dataO
-//                reg_gpio_pc_out = 0x20;
-                reg_gpio_pc_out = led_status()?(0x20 | BIT(3)):(0x20 & ~BIT(3));
+            //dataO
+            if (first_start) reg_gpio_pc_out = 0x20;
+            else reg_gpio_pc_out = led_status()?(0x20 | BIT(3)):(0x20 & ~BIT(3));
 
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
+            //ds
+            analog_write(areg_gpio_pc_ds, 0xFF);
 
-                reg_gpio_pc_gpio = 0xFF;
+            reg_gpio_pc_gpio = 0xFF;
 
-                reg_gpio_pd_setting1 = 0xFFFF00;
-                reg_gpio_pd_setting2 = 0x7BFF00;
-            } else {
-                reg_gpio_pa_setting1 = 0xFFFF80;
-                reg_gpio_pa_setting2 = 0x7FFF00;
-
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0xFD); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xFD; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-                reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0x3F;
-
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0xD7);
-
-                //oen
-                reg_gpio_pc_oen = 0xD7;
-
-                //dataO
-                reg_gpio_pc_out = 0x20;
-
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
-
-                reg_gpio_pc_gpio = 0xFF;
-
-                reg_gpio_pd_setting1 = 0xFFFF00;
-                reg_gpio_pd_setting2 = 0x7BFF00;
-            }
+            reg_gpio_pd_setting1 = 0xFFFF00;
+            reg_gpio_pd_setting2 = 0x7BFF00;
 
             //            Wakeup PA0-PA3 0x0E: 0x00
             //            Wakeup PA4-PA7 0x0F: 0x40
@@ -191,6 +156,22 @@ static inline void app_gpio_init(int anaRes_init_en) {
             break;
         case DEVICE_MODEL_2:
             /* TS0203 _TZ3000_hufxidjp Tuya - model_2 */
+
+            //            reg_gpio_pa_setting1: 0xFFFF80
+            //            reg_gpio_pa_setting2: 0x7FFF00
+            //            areg_gpio_pb_ie:  0xFD
+            //            reg_gpio_pb_oen:  0xFD
+            //            reg_gpio_pb_out:  0x02
+            //            areg_gpio_pb_ds:  0xFF
+            //            reg_gpio_pb_gpio: 0x3F
+            //            areg_gpio_pc_ie:  0xDB
+            //            reg_gpio_pc_oen:  0xDB
+            //            reg_gpio_pc_out:  0x20
+            //            areg_gpio_pc_ds:  0xFF
+            //            reg_gpio_pc_gpio: 0xFF
+            //            reg_gpio_pd_setting1: 0xFFFF00
+            //            reg_gpio_pd_setting2: 0x7BFF00
+
             reg_gpio_pa_setting1 = 0xFFFF80;
             reg_gpio_pa_setting2 = 0x7FFF00;
 
@@ -212,13 +193,42 @@ static inline void app_gpio_init(int anaRes_init_en) {
             //oen
             reg_gpio_pc_oen = 0xDB;
             //dataO
-            reg_gpio_pc_out = 0x20;
+            if (first_start) reg_gpio_pc_out = 0x20;
+            else reg_gpio_pc_out = led_status()?(0x20 | BIT(2)):(0x20 & ~BIT(2));
             //ds
             analog_write(areg_gpio_pc_ds, 0xFF);
             reg_gpio_pc_gpio = 0xFF;
 
             reg_gpio_pd_setting1 = 0xFFFF00;
             reg_gpio_pd_setting2 = 0x7BFF00;
+
+            //            Wakeup PA0-PA3 0x0E: 0x00
+            //            Wakeup PA4-PA7 0x0F: 0x40
+            //            Wakeup PB0-PB3 0x10: 0x04
+            //            Wakeup PB4-PB7 0x11: 0x00
+            //            Wakeup PC0-PC3 0x12: 0x40
+            //            Wakeup PC4-PC7 0x13: 0x00
+            //            Wakeup PD0-PD3 0x14: 0x00
+            //            Wakeup PD4-PD7 0x15: 0x00
+
+            if(anaRes_init_en) {
+                // WakeUp src PA0-PA3
+                analog_write(0x0e, 0);
+                // WakeUp src PA4-PA7
+                analog_write(0x0f, 0x40);
+                // WakeUp src PB0-PB3
+                analog_write(0x10, 0x04);
+                // WakeUp src PB4-PB7
+                analog_write(0x11, 0x00);
+                // WakeUp src PC0-PC3
+                analog_write(0x12, 0x40);
+                // WakeUp src PC4-PC7
+                analog_write(0x13, 0x00);
+                // WakeUp src PD0-PD3
+                analog_write(0x14, 0x00);
+                // WakeUp src PD4-PD7
+                analog_write(0x15, 0x00);
+            }
 
             break;
         case DEVICE_MODEL_3:
@@ -242,66 +252,35 @@ static inline void app_gpio_init(int anaRes_init_en) {
             //        reg_gpio_pd_setting1: 0xFFFF88
             //        reg_gpio_pd_setting2: 0xFBFF00
 
-            if (first_start) {
-                reg_gpio_pa_setting1 = 0xFFFF80;
-                reg_gpio_pa_setting2 = 0x7FFF00;
+            reg_gpio_pa_setting1 = 0xFFFF80;
+            reg_gpio_pa_setting2 = 0x7FFF00;
 
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0xED); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-                reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0x3F;
+            //PB group
+            //input en
+            analog_write(areg_gpio_pb_ie, 0xED); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
+            //output en
+            reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
+            //data out
+            if (first_start) reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
+            else reg_gpio_pb_out = led_status()?(0x02 | BIT(4)):(0x02 & ~BIT(4));
+            //ds
+            analog_write(areg_gpio_pb_ds, 0xFF);
+            //func as GPIO
+            reg_gpio_pb_gpio = 0x3F;
 
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0xDF);
-                //oen
-                reg_gpio_pc_oen = 0xDF;
-                //dataO
-                reg_gpio_pc_out = 0x20;
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
-                reg_gpio_pc_gpio = 0xFF;
+            //PC group
+            //ie
+            analog_write(areg_gpio_pc_ie, 0xDF);
+            //oen
+            reg_gpio_pc_oen = 0xDF;
+            //dataO
+            reg_gpio_pc_out = 0x20;
+            //ds
+            analog_write(areg_gpio_pc_ds, 0xFF);
+            reg_gpio_pc_gpio = 0xFF;
 
-                reg_gpio_pd_setting1 = 0xFFFF88;
-                reg_gpio_pd_setting2 = 0xFBFF00;
-            } else {
-                reg_gpio_pa_setting1 = 0xFFFF80;
-                reg_gpio_pa_setting2 = 0x7FFF00;
-
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0xED); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-//                reg_gpio_pb_out = 0x02; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                reg_gpio_pb_out = led_status()?(0x02 | BIT(4)):(0x02 & ~BIT(4));
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0x3F;
-
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0xDF);
-                //oen
-                reg_gpio_pc_oen = 0xDF;
-                //dataO
-                reg_gpio_pc_out = 0x20;
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
-                reg_gpio_pc_gpio = 0xFF;
-
-                reg_gpio_pd_setting1 = 0xFFFF88;
-                reg_gpio_pd_setting2 = 0xFBFF00;
-            }
+            reg_gpio_pd_setting1 = 0xFFFF88;
+            reg_gpio_pd_setting2 = 0xFBFF00;
 
             //        Wakeup PA0-PA3 0x0E: 0x00
             //        Wakeup PA4-PA7 0x0F: 0x40
@@ -356,74 +335,40 @@ static inline void app_gpio_init(int anaRes_init_en) {
             //            reg_gpio_pd_setting1: 0xFF0000
             //            reg_gpio_pd_setting2: 0xFFFF00
 
-            if (first_start) {
-                reg_gpio_pa_setting1 = 0xFF8080;
-                reg_gpio_pa_setting2 = 0x7FFF00;
+            reg_gpio_pa_setting1 = 0xFF8080;
+            reg_gpio_pa_setting2 = 0x7FFF00;
 
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0x40); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-                reg_gpio_pb_out = 0x12; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0xFF;
+            //PB group
+            //input en
+            analog_write(areg_gpio_pb_ie, 0x40); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
+            //output en
+            reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
+            //data out
+            if (first_start) reg_gpio_pb_out = 0x12; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
+            else reg_gpio_pb_out = led_status()?(0x12 & ~BIT(4)):(0x12 | BIT(4));
+            //ds
+            analog_write(areg_gpio_pb_ds, 0xFF);
+            //func as GPIO
+            reg_gpio_pb_gpio = 0xFF;
 
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0x02);
+            //PC group
+            //ie
+            analog_write(areg_gpio_pc_ie, 0x02);
 
-                //oen
-                reg_gpio_pc_oen = 0xDF;
+            //oen
+            reg_gpio_pc_oen = 0xDF;
 
-                //dataO
-                reg_gpio_pc_out = 0x20;
+            //dataO
+            reg_gpio_pc_out = 0x20;
 
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
+            //ds
+            analog_write(areg_gpio_pc_ds, 0xFF);
 
-                reg_gpio_pc_gpio = 0xFF;
+            reg_gpio_pc_gpio = 0xFF;
 
-                reg_gpio_pd_setting1 = 0xFF0000;
-                reg_gpio_pd_setting2 = 0xFFFF00;
-            } else {
-                reg_gpio_pa_setting1 = 0xFF8080;
-                reg_gpio_pa_setting2 = 0x7FFF00;
+            reg_gpio_pd_setting1 = 0xFF0000;
+            reg_gpio_pd_setting2 = 0xFFFF00;
 
-                //PB group
-                //input en
-                analog_write(areg_gpio_pb_ie, 0x40); // bit 7 - PB7 ... 0 - PB0, 1 - en, 0 - dis
-                //output en
-                reg_gpio_pb_oen = 0xED; // bit 7 - PB7 ... 0 - PB0, 0 - en, 1 - dis
-                //data out
-//                reg_gpio_pb_out = 0x12; // bit 7 - PB7 ... 0 - PB0, 1 - en, 0, dis
-                reg_gpio_pb_out = led_status()?(0x12 & ~BIT(4)):(0x12 | BIT(4));
-                //ds
-                analog_write(areg_gpio_pb_ds, 0xFF);
-                //func as GPIO
-                reg_gpio_pb_gpio = 0xFF;
-
-                //PC group
-                //ie
-                analog_write(areg_gpio_pc_ie, 0x02);
-
-                //oen
-                reg_gpio_pc_oen = 0xDF;
-
-                //dataO
-                reg_gpio_pc_out = 0x20;
-
-                //ds
-                analog_write(areg_gpio_pc_ds, 0xFF);
-
-                reg_gpio_pc_gpio = 0xFF;
-
-                reg_gpio_pd_setting1 = 0xFF0000;
-                reg_gpio_pd_setting2 = 0xFFFF00;
-            }
             //            Wakeup PA0-PA3 0x0E: 0x00
             //            Wakeup PA4-PA7 0x0F: 0x40
             //            Wakeup PB0-PB3 0x10: 0x04
@@ -537,30 +482,6 @@ static inline void app_gpio_init(int anaRes_init_en) {
     reg_gpio_pe_gpio = (PE0_FUNC==AS_GPIO ? BIT(0):0)   | (PE1_FUNC==AS_GPIO ? BIT(1):0)| (PE2_FUNC==AS_GPIO ? BIT(2):0)| (PE3_FUNC==AS_GPIO ? BIT(3):0);
 
 
-//    if(anaRes_init_en) {
-//        app_gpio_analog_resistance_init();
-//        if (device_model == DEVICE_MODEL_1) {
-//            // WakeUp src PB0-PB3
-//            analog_write (0x10, 0x04);
-//            // WakeUp src PB4-PB7
-//            analog_write (0x11, 0x04);
-//        } else if (device_model == DEVICE_MODEL_2) {
-//            // WakeUp src PB0-PB3
-//            analog_write (0x10, 0x04);
-//            // WakeUp src PC0-PC3
-//            analog_write (0x12, 0x40);
-//        } else if (device_model == DEVICE_MODEL_3) {
-//            // WakeUp src PB0-PB3
-//            analog_write (0x10, 0x04);
-//            // WakeUp sec PD0-PD3
-//            analog_write (0x14, 0x40);
-//        } else if (device_model == DEVICE_MODEL_4) {
-//            // WakeUp src PB0-PB3
-//            analog_write (0x10, 0x04);
-//            // WakeUp src PB4-PB7
-//            analog_write (0x11, 0x10);
-//        }
-//    }
 }
 
 //#endif /* SRC_INCLUDE_APP_GPIO_H_ */
