@@ -16,6 +16,7 @@
 #include "app_on_off.h"
 #include "app_battery.h"
 #include "app_reporting.h"
+#include "app_repeat_cmd.h"
 #include "app_endpoint_cfg.h"
 #include "app_utility.h"
 #include "app_device.h"
@@ -32,7 +33,6 @@ typedef struct {
     ev_timer_event_t *timerFactoryReset;
     ev_timer_event_t *timerSetPollRateEvt;
     ev_timer_event_t *timerBatteryEvt;
-    ev_timer_event_t *timerLedEvt;
     ev_timer_event_t *timerNoJoinedEvt;
 
 //    uint32_t short_poll;
@@ -43,12 +43,6 @@ typedef struct {
 //    button_t button[MAX_BUTTON_NUM];
 //    u32 keyPressedTime;
 //    u8  keyPressed;
-
-    uint16_t ledOnTime;
-    uint16_t ledOffTime;
-    uint8_t  oriSta;     //original state before blink
-    uint8_t  sta;        //current state in blink
-    uint8_t  times;      //blink times
 
     uint32_t read_sensor_time;
 

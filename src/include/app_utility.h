@@ -40,13 +40,26 @@
 #define TIMEOUT_6HOUR      21600 * 1000     /* timeout 6 hour   */
 #define TIMEOUT_8HOUR      28800 * 1000     /* timeout 8 hour   */
 
+#if (UART_PRINTF_MODE || USB_PRINTF_MODE)
+#define APP_DEBUG(compileFlag, ...)             do{ \
+                                                    if(compileFlag) { \
+                                                        uint32_t r = drv_disable_irq(); \
+                                                        TRACE(__VA_ARGS__); \
+                                                        drv_restore_irq(r); \
+                                                    } \
+                                                }while(0)
+
+#else
+    #define APP_DEBUG(compileFlag, ...)
+#endif
+
 void start_message();
 int32_t poll_rateAppCb(void *arg);
 int32_t delayedMcuResetCb(void *arg);
 int32_t delayedFactoryResetCb(void *arg);
 int32_t delayedFullResetCb(void *arg);
 int32_t set_pollRateCb(void *args);
-void app_setPollRate(uint32_t sec);
+void app_setPollRate(uint32_t ms);
 int32_t net_steer_start_offCb(void *args);
 
 #endif /* SRC_INCLUDE_APP_UTILITY_H_ */

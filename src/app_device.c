@@ -1,7 +1,7 @@
 #include "app_main.h"
 
-static bool first_start = true;
-static uint8_t zb_modelId[10] = {8,'M','o','d','e','l',' ','0','0',0};
+bool first_start = true;
+static uint8_t productLabel[10] = {8,'M','o','d','e','l',' ','0','0',0};
 
 
 device_door_t device_door[DEVICE_MODEL_MAX];
@@ -44,34 +44,37 @@ static void device_model_init() {
         device_gpio_init(&device->debug_gpio);
         gpio_write(device->debug_gpio.gpio, 1);
 #endif
-        light_init();
     }
-    kb_drv_init();
 
-    switch(device_model) {
-        case DEVICE_MODEL_1:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '1';
-            break;
-        case DEVICE_MODEL_2:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '2';
-            break;
-        case DEVICE_MODEL_3:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '3';
-            break;
-        case DEVICE_MODEL_4:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '4';
-            break;
-        default:
-            zb_modelId[7] = '0';
-            zb_modelId[8] = '0';
-            break;
+    if (first_start) {
+        first_start = false;
+        light_init();
+        kb_drv_init();
+        switch(device_model) {
+            case DEVICE_MODEL_1:
+                productLabel[7] = '0';
+                productLabel[8] = '1';
+                break;
+            case DEVICE_MODEL_2:
+                productLabel[7] = '0';
+                productLabel[8] = '2';
+                break;
+            case DEVICE_MODEL_3:
+                productLabel[7] = '0';
+                productLabel[8] = '3';
+                break;
+            case DEVICE_MODEL_4:
+                productLabel[7] = '0';
+                productLabel[8] = '4';
+                break;
+            default:
+                productLabel[7] = '0';
+                productLabel[8] = '0';
+                break;
+        }
+        memcpy(g_zcl_basicAttrs.productLabel, productLabel, 9);
+        g_zcl_onOffSwitchCfgAttrs.model = device_model;
     }
-    memcpy(g_zcl_basicAttrs.productLabel, zb_modelId, 9);
-    g_zcl_onOffSwitchCfgAttrs.model = device_model;
 }
 
 void device_model_restore() {
@@ -82,11 +85,11 @@ void device_model_restore() {
 
     if (model_cfg.id == DEVICE_MODEL_CFG_ID && model_cfg.crc == checksum((uint8_t*)&model_cfg, sizeof(config_door_model_t)-1)) {
         device_model = model_cfg.device_model;
-        DEBUG(UART_PRINTF_MODE, "Model restore: model_%d\r\n", device_model);
+        APP_DEBUG(UART_PRINTF_MODE, "Model restore: model_%d\r\n", device_model);
         device_model_init();
     } else {
         device_model = DEVICE_MODEL;
-        DEBUG(UART_PRINTF_MODE, "Default model: model_%d\r\n", device_model);
+        APP_DEBUG(UART_PRINTF_MODE, "Default model: model_%d\r\n", device_model);
         device_model_save(device_model);
         device_model_init();
     }
@@ -102,7 +105,7 @@ void device_model_save(uint8_t model) {
     model_cfg.crc = checksum((uint8_t*)&(model_cfg), sizeof(config_door_model_t)-1);
     flash_write(DEVICE_MODEL_CFG_ADDR, sizeof(config_door_model_t), (uint8_t*)&(model_cfg));
 
-    DEBUG(UART_PRINTF_MODE, "Model save: model_%d\r\n", device_model);
+    APP_DEBUG(UART_PRINTF_MODE, "Model save: model_%d\r\n", device_model);
 
 }
 
@@ -111,7 +114,6 @@ void device_init() {
 
     if (first_start) {
 
-        first_start = false;
         memset(&device_door, 0, sizeof(device_door));
 
         /* None device - model_0 */
@@ -230,7 +232,7 @@ void device_init() {
         } else {
             device_model_restore();
         }
-    } else {
-        device_model_init();
+//    } else {
+//        device_model_init();
     }
 }

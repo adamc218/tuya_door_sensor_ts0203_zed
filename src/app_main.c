@@ -9,7 +9,6 @@ app_ctx_t g_appCtx = {
         .timerForcedReportEvt = NULL,
         .timerNoJoinedEvt = NULL,
         .timerSetPollRateEvt = NULL,
-        .oriSta = false,
 //        .time_without_joined = 0,
         .net_steer_start = false,
         .read_sensor_time = 0,
@@ -90,6 +89,43 @@ bdb_commissionSetting_t g_bdbCommissionSetting = {
  * FUNCTIONS
  */
 
+static void afApsAckCb(void *args) {
+
+    apsdeDataConf_t *pApsDataCnf = (apsdeDataConf_t *)args;
+    repeat_cmd_t *r_cmd = app_find_repeat_cmd(pApsDataCnf->clusterId,
+                                              pApsDataCnf->srcEndpoint,
+                                              pApsDataCnf->dstEndpoint,
+                                              pApsDataCnf->dstAddrMode,
+                                              (tl_zb_addr_t*)&pApsDataCnf->dstAddr);
+#if UART_PRINTF_MODE
+    APP_DEBUG(DEBUG_REPEAT_EN, "afApsAckCb() - status: 0x%02x, clId: 0x%04x, src_ep: %d, dst_ep: %d, ",
+            pApsDataCnf->status, pApsDataCnf->clusterId, pApsDataCnf->srcEndpoint, pApsDataCnf->dstEndpoint);
+    if (pApsDataCnf->dstAddrMode == APS_SHORT_GROUPADDR_NOEP) {
+        APP_DEBUG(DEBUG_REPEAT_EN, "short_addr: 0x%04x, ", pApsDataCnf->dstAddr.addr_short);
+    } else {
+        APP_DEBUG(DEBUG_REPEAT_EN, "ieee: 0x%02x%02x%02x%02x%02x%02x%02x%02x, ",
+                pApsDataCnf->dstAddr.addr_long[0], pApsDataCnf->dstAddr.addr_long[1],
+                pApsDataCnf->dstAddr.addr_long[2], pApsDataCnf->dstAddr.addr_long[3],
+                pApsDataCnf->dstAddr.addr_long[4], pApsDataCnf->dstAddr.addr_long[5],
+                pApsDataCnf->dstAddr.addr_long[6], pApsDataCnf->dstAddr.addr_long[7]);
+
+        APP_DEBUG(DEBUG_REPEAT_EN, "cmp_addr: %d, ", ZB_64BIT_ADDR_CMP(pApsDataCnf->dstAddr.addr_long, pApsDataCnf->dstAddr.addr_long));
+    }
+    APP_DEBUG(DEBUG_REPEAT_EN, "r_cmd: %s\r\n", r_cmd?"true":"false");
+#endif
+
+    if (r_cmd) {
+        if (pApsDataCnf->status != APS_STATUS_SUCCESS) {
+            if (pApsDataCnf->dstAddrMode != APS_SHORT_GROUPADDR_NOEP) {
+                if (pApsDataCnf->clusterId == ZCL_CLUSTER_GEN_ON_OFF) {
+                    TL_ZB_TIMER_SCHEDULE(app_repeatCmdOnOff, r_cmd, TIMEOUT_250MS);
+                }
+            }
+        }
+        r_cmd->used = false;
+    }
+}
+
 /*********************************************************************
  * @fn      stack_init
  *
@@ -132,7 +168,7 @@ void user_app_init(void)
     zcl_init(app_zclProcessIncomingMsg);
 
     /* register endPoint */
-    af_endpointRegister(APP_ENDPOINT1, (af_simple_descriptor_t *)&app_ep1Desc, zcl_rx_handler, NULL);
+    af_endpointRegister(APP_ENDPOINT1, (af_simple_descriptor_t *)&app_ep1Desc, zcl_rx_handler, afApsAckCb);
 
     zcl_reportingTabInit();
     zcl_onOffCfgAttr_restore();
@@ -152,32 +188,34 @@ void user_app_init(void)
     g_appCtx.timerBatteryEvt = TL_ZB_TIMER_SCHEDULE(batteryCb, NULL, BATTERY_TIMER_INTERVAL);
 #endif
 
-    dev_onoff_cmd_init();
+    APP_DEBUG(DEBUG_GPIO_EN, "model_in_flash: %d\r\n", model_in_flash);
 
-    DEBUG(DEBUG_GPIO_EN, "model_in_flash: %d\r\n", model_in_flash);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pa_setting1: 0x%02x\r\n", reg_gpio_pa_setting1);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pa_setting2: 0x%02x\r\n", reg_gpio_pa_setting2);
 
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pa_setting1: 0x%x\r\n", reg_gpio_pa_setting1);
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pa_setting2: 0x%x\r\n", reg_gpio_pa_setting2);
+    APP_DEBUG(DEBUG_GPIO_EN, "areg_gpio_pb_ie:  0x%02x\r\n", analog_read(areg_gpio_pb_ie));
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_oen:  0x%02x\r\n", reg_gpio_pb_oen);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_out:  0x%02x\r\n", reg_gpio_pb_out);
+    APP_DEBUG(DEBUG_GPIO_EN, "areg_gpio_pb_ds:  0x%02x\r\n", analog_read(areg_gpio_pb_ds));
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_gpio: 0x%02x\r\n", reg_gpio_pb_gpio);
 
-    DEBUG(DEBUG_GPIO_EN, "areg_gpio_pb_ie: 0x%x\r\n", analog_read(areg_gpio_pb_ie));
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_oen: 0x%x\r\n", reg_gpio_pb_oen);
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_out: 0x%x\r\n", reg_gpio_pb_out);
-    DEBUG(DEBUG_GPIO_EN, "areg_gpio_pb_ds: 0x%x\r\n", analog_read(areg_gpio_pb_ds));
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pb_gpio: 0x%x\r\n", reg_gpio_pb_gpio);
+    APP_DEBUG(DEBUG_GPIO_EN, "areg_gpio_pc_ie:  0x%02x\r\n", analog_read(areg_gpio_pc_ie));
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_oen:  0x%02x\r\n", reg_gpio_pc_oen);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_out:  0x%02x\r\n", reg_gpio_pc_out);
+    APP_DEBUG(DEBUG_GPIO_EN, "areg_gpio_pc_ds:  0x%02x\r\n", analog_read(areg_gpio_pc_ds));
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_gpio: 0x%02x\r\n", reg_gpio_pc_gpio);
 
-    DEBUG(DEBUG_GPIO_EN, "areg_gpio_pc_ie: 0x%x\r\n", analog_read(areg_gpio_pc_ie));
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_oen: 0x%x\r\n", reg_gpio_pc_oen);
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_out: 0x%x\r\n", reg_gpio_pc_out);
-    DEBUG(DEBUG_GPIO_EN, "areg_gpio_pc_ds: 0x%x\r\n", analog_read(areg_gpio_pc_ds));
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pc_gpio: 0x%x\r\n", reg_gpio_pc_gpio);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pd_setting1: 0x%02x\r\n", reg_gpio_pd_setting1);
+    APP_DEBUG(DEBUG_GPIO_EN, "reg_gpio_pd_setting2: 0x%02x\r\n", reg_gpio_pd_setting2);
 
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pd_setting1: 0x%x\r\n", reg_gpio_pd_setting1);
-    DEBUG(DEBUG_GPIO_EN, "reg_gpio_pd_setting2: 0x%x\r\n", reg_gpio_pd_setting2);
-
-    DEBUG(DEBUG_GPIO_EN, "Wakeup PB0-PB3 0x10: 0x%x\r\n", analog_read(0x10));
-    DEBUG(DEBUG_GPIO_EN, "Wakeup PB4-PB7 0x11: 0x%x\r\n", analog_read(0x11));
-    DEBUG(DEBUG_GPIO_EN, "Wakeup PC0-PC3 0x12: 0x%x\r\n", analog_read(0x12));
-    DEBUG(DEBUG_GPIO_EN, "Wakeup PD0-PD3 0x14: 0x%x\r\n", analog_read(0x14));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PA0-PA3 0x0E: 0x%02x\r\n", analog_read(0x0E));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PA4-PA7 0x0F: 0x%02x\r\n", analog_read(0x0F));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PB0-PB3 0x10: 0x%02x\r\n", analog_read(0x10));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PB4-PB7 0x11: 0x%02x\r\n", analog_read(0x11));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PC0-PC3 0x12: 0x%02x\r\n", analog_read(0x12));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PC4-PC7 0x13: 0x%02x\r\n", analog_read(0x13));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PD0-PD3 0x14: 0x%02x\r\n", analog_read(0x14));
+    APP_DEBUG(DEBUG_GPIO_EN, "Wakeup PD4-PD7 0x15: 0x%02x\r\n", analog_read(0x15));
 }
 
 
@@ -211,7 +249,7 @@ extern volatile uint16_t T_evtExcept[4];
 
 static void appSysException(void) {
 
-    DEBUG(UART_PRINTF_MODE, "app_sysException, line: %d, event: 0x%02x, reset\r\n", T_evtExcept[0], T_evtExcept[1]);
+    APP_DEBUG(UART_PRINTF_MODE, "app_sysException, line: %d, event: 0x%02x, reset\r\n", T_evtExcept[0], T_evtExcept[1]);
 
 #if 1
     SYSTEM_RESET();

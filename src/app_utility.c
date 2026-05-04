@@ -7,15 +7,15 @@ uint32_t mcuBootAddrGet(void);
 
 void start_message() {
 #ifdef ZCL_OTA
-    DEBUG(UART_PRINTF_MODE, "OTA mode enabled. MCU boot from address: 0x%x\r\n", mcuBootAddrGet());
+    APP_DEBUG(UART_PRINTF_MODE, "OTA mode enabled. MCU boot from address: 0x%x\r\n", mcuBootAddrGet());
 #else
-    DEBUG(UART_PRINTF_MODE, "OTA mode desabled. MCU boot from address: 0x%x\r\n", mcuBootAddrGet());
+    APP_DEBUG(UART_PRINTF_MODE, "OTA mode desabled. MCU boot from address: 0x%x\r\n", mcuBootAddrGet());
 #endif
 
 #if UART_PRINTF_MODE
     const uint8_t version[] = ZCL_BASIC_SW_BUILD_ID;
-    DEBUG(UART_PRINTF_MODE, "Firmware version: %s\r\n", version+1);
-    DEBUG(UART_PRINTF_MODE, "Device model is 'model_%d'\r\n", device_model);
+    APP_DEBUG(UART_PRINTF_MODE, "Firmware version: %s\r\n", version+1);
+    APP_DEBUG(UART_PRINTF_MODE, "Device model is 'model_%d'\r\n", device_model);
 #endif
 }
 
@@ -47,21 +47,27 @@ int32_t delayedFullResetCb(void *arg) {
 
 int32_t set_pollRateCb(void *args) {
 
-//    printf("set_pollRateCb\r\n");
+    APP_DEBUG(UART_PRINTF_MODE, "set_pollRateCb()\r\n");
 
-    zb_setPollRate(POLL_RATE * 6);
+    uint32_t poll_rate = POLL_RATE * 6;
+
+    app_deferredCmdPollRate(poll_rate);
+    zb_setPollRate(poll_rate);
 
     g_appCtx.timerSetPollRateEvt = NULL;
     return -1;
 }
 
-void app_setPollRate(uint32_t sec) {
+void app_setPollRate(uint32_t ms) {
 
-    zb_setPollRate(POLL_RATE * 3);
+    uint32_t poll_rate = POLL_RATE * 3;
+
+    app_deferredCmdPollRate(poll_rate);
+    zb_setPollRate(poll_rate);
     if (g_appCtx.timerSetPollRateEvt) {
         TL_ZB_TIMER_CANCEL(&g_appCtx.timerSetPollRateEvt);
     }
-    g_appCtx.timerSetPollRateEvt = TL_ZB_TIMER_SCHEDULE(set_pollRateCb, NULL, sec /*TIMEOUT_20SEC*/);
+    g_appCtx.timerSetPollRateEvt = TL_ZB_TIMER_SCHEDULE(set_pollRateCb, NULL, ms /*TIMEOUT_20SEC*/);
 
 }
 
