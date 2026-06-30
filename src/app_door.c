@@ -39,7 +39,7 @@ void door_handler() {
     if (zb_getLocalShortAddr() >= 0xFFF8) return;
     if (!zb_isDeviceJoinedNwk()) zb_rejoinReq(zb_apsChannelMaskGet(), g_bdbAttrs.scanDuration);
 
-    if (drv_gpio_read(device->door_gpio.gpio)) {
+    if (!drv_gpio_read(device->door_gpio.gpio)) {
         close_count = 0;
         if (!g_appCtx.open) {
             if (!open_count) {
