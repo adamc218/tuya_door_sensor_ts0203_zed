@@ -31,7 +31,7 @@ jobs:
       run: |
         make clean
         echo TOOLCHAIN_DIR ${{env.TOOLCHAIN_DIR}}/bin/tc32
-        make PROJECT_MODEL=_model_1 COMPILE_PREFIX=${{env.TOOLCHAIN_DIR }}/bin/tc32
+        make PROJECT_MODEL=_model_3 MANUF_CODE=4742 IMAGE_TYPE=514 COMPILE_PREFIX=${{env.TOOLCHAIN_DIR}}/bin/tc32
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload a Build Artifact
